@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precificação com IA</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to enhance the UI */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Style for number input arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        /* Simple spinner animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #ffffff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-white flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main container for the calculator -->
+    <div class="container relative bg-gray-50 p-8 rounded-2xl shadow-lg w-full max-w-lg mx-auto border border-gray-200">
+        <!-- Botão de Menu -->
+        <button id="menu-btn" class="absolute top-8 left-8 text-gray-600 hover:text-gray-900 focus:outline-none z-20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+
+        <!-- Menu Dropdown -->
+        <div id="menu-dropdown" class="hidden absolute top-16 left-8 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10">
+            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="menu-btn">
+                <a href="#" id="smartphone-tab" class="block px-4 py-2 text-sm text-gray-700 bg-gray-100 font-semibold" role="menuitem">Smartphone</a>
+                <a href="#" id="acessorios-tab" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Acessórios</a>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <h2 class="text-2xl font-bold text-center mb-8 text-gray-800">
+            Calculadora De Precificação
+        </h2>
+        
+        <!-- Input fields section -->
+        <div class="space-y-6">
+            <!-- Product name text field -->
+            <div class="input-group">
+                <label for="nomeProduto" class="block mb-2 text-sm font-medium text-gray-600">Nome do Produto</label>
+                <input type="text" id="nomeProduto" list="iphone-models" placeholder="Digite ou selecione um modelo de iPhone" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+                <datalist id="iphone-models">
+                    <option value="iPhone 11"></option>
+                    <option value="iPhone 11 Pro"></option>
+                    <option value="iPhone 11 Pro Max"></option>
+                    <option value="iPhone 12"></option>
+                    <option value="iPhone 12 Mini"></option>
+                    <option value="iPhone 12 Pro"></option>
+                    <option value="iPhone 12 Pro Max"></option>
+                    <option value="iPhone 13"></option>
+                    <option value="iPhone 13 Mini"></option>
+                    <option value="iPhone 13 Pro"></option>
+                    <option value="iPhone 13 Pro Max"></option>
+                    <option value="iPhone 14"></option>
+                    <option value="iPhone 14 Plus"></option>
+                    <option value="iPhone 14 Pro"></option>
+                    <option value="iPhone 14 Pro Max"></option>
+                    <option value="iPhone 15"></option>
+                    <option value="iPhone 15 Plus"></option>
+                    <option value="iPhone 15 Pro"></option>
+                    <option value="iPhone 15 Pro Max"></option>
+                    <option value="iPhone 16"></option>
+                    <option value="iPhone 16 Plus"></option>
+                    <option value="iPhone 16 Pro"></option>
+                    <option value="iPhone 16 Pro Max"></option>
+                </datalist>
+                <datalist id="acessorios-models">
+                    <option value="AirPods Pro (2ª geração)"></option>
+                    <option value="Apple Watch SE 2 40MM"></option>
+                    <option value="Apple Watch Series 9"></option>
+                    <option value="Cabo de USB-C para Lightning"></option>
+                    <option value="Capa Anti Impactos Transparente"></option>
+                    <option value="Capa Case Magnética Carregamento por Indução"></option>
+                    <option value="Capa de Silicone com MagSafe"></option>
+                    <option value="Carregador 20W USB-C"></option>
+                    <option value="MagSafe Battery Pack"></option>
+                    <option value="Película de Vidro Temperado"></option>
+                </datalist>
+            </div>
+
+            <div class="input-group">
+                <label for="custo" class="block mb-2 text-sm font-medium text-gray-600">Preço de Custo (R$)</label>
+                <input type="number" id="custo" value="50" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+            </div>
+            
+            <div class="input-group">
+                <label for="frete" class="block mb-2 text-sm font-medium text-gray-600">Frete de Compra (R$)</label>
+                <input type="number" id="frete" value="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+            </div>
+
+            <div class="input-group">
+                <label for="outrosCustos" class="block mb-2 text-sm font-medium text-gray-600">Outros Custos Fixos (R$)</label>
+                <input type="number" id="outrosCustos" value="0" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+            </div>
+
+            <div class="input-group">
+                <label for="taxa" class="block mb-2 text-sm font-medium text-gray-600">Taxa da Plataforma (%)</label>
+                <input type="number" id="taxa" value="15" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+            </div>
+            
+            <div class="input-group">
+                <label for="imposto" class="block mb-2 text-sm font-medium text-gray-600">Imposto (%)</label>
+                <input type="number" id="imposto" value="6" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+            </div>
+            
+            <div class="input-group">
+                <label for="margem" class="block mb-2 text-sm font-medium text-gray-600">Margem de Lucro Desejada (%)</label>
+                <input type="number" id="margem" value="30" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500">
+            </div>
+        </div>
+        
+        <!-- Results section -->
+        <div class="resultados mt-8 border-t-2 border-gray-200 pt-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Análise de Lucratividade</h2>
+            <div class="space-y-4">
+                <div class="resultado-item flex justify-between items-center text-gray-700">
+                    <span>Preço de Venda Sugerido:</span>
+                    <span id="pvs" class="valor font-bold text-black text-xl">R$ 0,00</span>
+                </div>
+                <div class="resultado-item flex justify-between items-center text-gray-700">
+                    <span>Imposto Calculado:</span>
+                    <span id="imposto-valor" class="valor font-bold text-red-500 text-xl">R$ 0,00</span>
+                </div>
+                <div class="resultado-item flex justify-between items-center text-gray-700">
+                    <span>Lucro Líquido por Unidade:</span>
+                    <span id="lucro" class="valor font-bold text-green-500 text-xl">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gemini API Feature Section -->
+        <div class="gemini-feature mt-8 border-t-2 border-gray-200 pt-6">
+            <button id="generate-description-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 disabled:bg-blue-300">
+                <span id="btn-text">✨ Gerar Descrição do Produto</span>
+                <div id="spinner" class="spinner hidden"></div>
+            </button>
+            <div class="mt-4">
+                <label for="productDescription" class="block mb-2 text-sm font-medium text-gray-600">Descrição Gerada por IA</label>
+                <textarea id="productDescription" rows="8" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-500" placeholder="A descrição do seu produto aparecerá aqui..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store the suggested price globally to be accessed by the Gemini function
+        let suggestedPrice = 0;
+
+        // Function to perform the pricing calculation
+        function calcular() {
+            // Get values from input fields, parsing them as floats with a default of 0
+            const custo = parseFloat(document.getElementById('custo').value) || 0;
+            const frete = parseFloat(document.getElementById('frete').value) || 0;
+            const outrosCustos = parseFloat(document.getElementById('outrosCustos').value) || 0; 
+            const taxa = parseFloat(document.getElementById('taxa').value) / 100 || 0;
+            const imposto = parseFloat(document.getElementById('imposto').value) / 100 || 0;
+            const margem = parseFloat(document.getElementById('margem').value) / 100 || 0;
+
+            // Calculate the suggested selling price based on costs and desired margins/taxes
+            const precoVenda = (custo + frete + outrosCustos) / (1 - taxa - imposto - margem);
+            suggestedPrice = isFinite(precoVenda) ? precoVenda : 0;
+            
+            // Calculate the tax amount based on the selling price
+            const impostoValor = precoVenda * imposto;
+
+            // Calculate the net profit after all costs and taxes
+            const lucroLiquido = precoVenda - (custo + frete + outrosCustos) - (precoVenda * taxa) - impostoValor;
+
+            // Display the results in the UI, formatted as Brazilian currency
+            document.getElementById('pvs').textContent = 'R$ ' + suggestedPrice.toFixed(2).replace('.', ',');
+            document.getElementById('lucro').textContent = 'R$ ' + (isFinite(lucroLiquido) ? lucroLiquido.toFixed(2).replace('.', ',') : '0,00');
+            document.getElementById('imposto-valor').textContent = 'R$ ' + (isFinite(impostoValor) ? impostoValor.toFixed(2).replace('.', ',') : '0,00');
+        }
+
+        const productDescriptions = {
+            // iPhones
+            "iPhone 11": `• Tela: Liquid Retina HD LCD de 6,1 polegadas | Resolução de 1792 x 828 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular)
+  Frontal: 12 MP
+• Bateria: 3.110 mAh
+• Processador: A13 Bionic`,
+            "iPhone 11 Pro": `• Tela: Super Retina XDR OLED de 5,8 polegadas | Resolução de 2436 x 1125 pixels
+• Câmera:
+  Traseira: Tripla de 12 MP (Principal, Ultra-angular e Teleobjetiva)
+  Frontal: 12 MP
+• Bateria: 3.046 mAh
+• Processador: A13 Bionic`,
+            "iPhone 11 Pro Max": `• Tela: Super Retina XDR OLED de 6,5 polegadas | Resolução de 2688 x 1242 pixels
+• Câmera:
+  Traseira: Tripla de 12 MP (Principal, Ultra-angular e Teleobjetiva)
+  Frontal: 12 MP
+• Bateria: 3.969 mAh
+• Processador: A13 Bionic`,
+            "iPhone 12 Mini": `• Tela: Super Retina XDR OLED de 5,4 polegadas | Resolução de 2340 x 1080 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular)
+  Frontal: 12 MP
+• Bateria: 2.227 mAh
+• Processador: A14 Bionic`,
+            "iPhone 12": `• Tela: Super Retina XDR OLED de 6,1 polegadas | Resolução de 2532 x 1170 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular)
+  Frontal: 12 MP
+• Bateria: 2.815 mAh
+• Processador: A14 Bionic`,
+            "iPhone 12 Pro": `• Tela: Super Retina XDR OLED de 6,1 polegadas | Resolução de 2532 x 1170 pixels
+• Câmera:
+  Traseira: Tripla de 12 MP (Principal, Ultra-angular e Teleobjetiva) com sensor LiDAR
+  Frontal: 12 MP
+• Bateria: 2.815 mAh
+• Processador: A14 Bionic`,
+            "iPhone 12 Pro Max": `• Tela: Super Retina XDR OLED de 6,7 polegadas | Resolução de 2778 x 1284 pixels
+• Câmera:
+  Traseira: Tripla de 12 MP (Principal com estabilização por deslocamento de sensor, Ultra-angular e Teleobjetiva) com sensor LiDAR
+  Frontal: 12 MP
+• Bateria: 3.687 mAh
+• Processador: A14 Bionic`,
+            "iPhone 13 Mini": `• Tela: Super Retina XDR OLED de 5,4 polegadas | Resolução de 2340 x 1080 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular) com estabilização por deslocamento de sensor
+  Frontal: 12 MP
+• Bateria: 2.438 mAh
+• Processador: A15 Bionic (GPU de 4 núcleos)`,
+            "iPhone 13": `• Tela: Super Retina XDR OLED de 6,1 polegadas | Resolução de 2532 x 1170 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular) com estabilização por deslocamento de sensor
+  Frontal: 12 MP
+• Bateria: 3.240 mAh
+• Processador: A15 Bionic (GPU de 4 núcleos)`,
+            "iPhone 13 Pro": `• Tela: Super Retina XDR OLED de 6,1 polegadas com ProMotion (até 120 Hz) | Resolução de 2532 x 1170 pixels
+• Câmera:
+  Traseira: Tripla de 12 MP (Principal, Ultra-angular e Teleobjetiva) com sensor LiDAR
+  Frontal: 12 MP
+• Bateria: 3.095 mAh
+• Processador: A15 Bionic (GPU de 5 núcleos)`,
+            "iPhone 13 Pro Max": `• Tela: Super Retina XDR OLED de 6,7 polegadas com ProMotion (até 120 Hz) | Resolução de 2778 x 1284 pixels
+• Câmera:
+  Traseira: Tripla de 12 MP (Principal, Ultra-angular e Teleobjetiva) com sensor LiDAR
+  Frontal: 12 MP
+• Bateria: 4.352 mAh
+• Processador: A15 Bionic (GPU de 5 núcleos)`,
+            "iPhone 14": `• Tela: Super Retina XDR OLED de 6,1 polegadas | Resolução de 2532 x 1170 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular) com Photonic Engine
+  Frontal: 12 MP com foco automático
+• Bateria: 3.279 mAh
+• Processador: A15 Bionic (GPU de 5 núcleos)`,
+            "iPhone 14 Plus": `• Tela: Super Retina XDR OLED de 6,7 polegadas | Resolução de 2778 x 1284 pixels
+• Câmera:
+  Traseira: Dupla de 12 MP (Principal e Ultra-angular) com Photonic Engine
+  Frontal: 12 MP com foco automático
+• Bateria: 4.325 mAh
+• Processador: A15 Bionic (GPU de 5 núcleos)`,
+            "iPhone 14 Pro": `• Tela: Super Retina XDR OLED de 6,1 polegadas com ProMotion (1-120 Hz) e Dynamic Island | Resolução de 2556 x 1179 pixels
+• Câmera:
+  Traseira: Tripla com sensor principal de 48 MP, Ultra-angular de 12 MP e Teleobjetiva de 12 MP, com sensor LiDAR
+  Frontal: 12 MP com foco automático
+• Bateria: 3.200 mAh
+• Processador: A16 Bionic`,
+            "iPhone 14 Pro Max": `• Tela: Super Retina XDR OLED de 6,7 polegadas com ProMotion (1-120 Hz) e Dynamic Island | Resolução de 2796 x 1290 pixels
+• Câmera:
+  Traseira: Tripla com sensor principal de 48 MP, Ultra-angular de 12 MP e Teleobjetiva de 12 MP, com sensor LiDAR
+  Frontal: 12 MP com foco automático
+• Bateria: 4.323 mAh
+• Processador: A16 Bionic`,
+            "iPhone 15": `• Tela: Super Retina XDR OLED de 6,1 polegadas com Dynamic Island | Resolução de 2556 x 1179 pixels
+• Câmera:
+  Traseira: Dupla com sensor principal de 48 MP e Ultra-angular de 12 MP
+  Frontal: 12 MP
+• Bateria: 3.349 mAh
+• Processador: A16 Bionic`,
+            "iPhone 15 Plus": `• Tela: Super Retina XDR OLED de 6,7 polegadas com Dynamic Island | Resolução de 2796 x 1290 pixels
+• Câmera:
+  Traseira: Dupla com sensor principal de 48 MP e Ultra-angular de 12 MP
+  Frontal: 12 MP
+• Bateria: 4.383 mAh
+• Processador: A16 Bionic`,
+            "iPhone 15 Pro": `• Tela: Super Retina XDR OLED de 6,1 polegadas com ProMotion (1-120 Hz) e Dynamic Island | Resolução de 2556 x 1179 pixels
+• Câmera:
+  Traseira: Tripla com sensor principal de 48 MP, Ultra-angular de 12 MP e Teleobjetiva de 12 MP (zoom óptico de 3x)
+  Frontal: 12 MP
+• Bateria: 3.274 mAh
+• Processador: A17 Pro`,
+            "iPhone 15 Pro Max": `• Tela: Super Retina XDR OLED de 6,7 polegadas com ProMotion (1-120 Hz) e Dynamic Island | Resolução de 2796 x 1290 pixels
+• Câmera:
+  Traseira: Tripla com sensor principal de 48 MP, Ultra-angular de 12 MP e Teleobjetiva de 12 MP com design tetraprisma (zoom óptico de 5x)
+  Frontal: 12 MP
+• Bateria: 4.422 mAh
+• Processador: A17 Pro`,
+            "iPhone 16": `• Tela: Super Retina XDR OLED de 6,1 polegadas com resolução de 1.179 x 2.556 pixels, taxa de atualização de 60 Hz e brilho de 2.000 nits.
+• Câmera:
+  Traseira: Dupla: Principal de 48 MP com estabilização óptica (OIS) e ultrawide de 12 MP.
+  Frontal: 12 MP.
+• Bateria: 3.561 mAh.
+• Processador: Apple A18.`,
+            "iPhone 16 Plus": `• Tela: Super Retina XDR OLED de 6,7 polegadas.
+• Câmera:
+  Traseira: Dupla: Principal de 48 MP com OIS e ultrawide de 12 MP.
+  Frontal: 12 MP.
+• Bateria: Maior que a do iPhone 16.
+• Processador: Apple A18.`,
+            "iPhone 16 Pro": `• Tela: Super Retina XDR OLED com ProMotion (1-120 Hz) e brilho de 2.000 nits.
+• Câmera:
+  Traseira: Tripla: Principal de 48 MP, ultrawide de 48 MP e telefoto de 12 MP com zoom óptico de 5x.
+  Frontal: 12 MP.
+• Bateria: A capacidade exata não foi especificada.
+• Processador: Apple A18 Pro.`,
+            "iPhone 16 Pro Max": `• Tela: Super Retina XDR OLED de 6,9 polegadas com ProMotion (1-120 Hz) e brilho de 2.000 nits.
+• Câmera:
+  Traseira: Tripla: Principal de 48 MP, ultrawide de 48 MP e telefoto de 12 MP com zoom óptico de 5x.
+  Frontal: 12 MP.
+• Bateria: 4.685 mAh.
+• Processador: Apple A18 Pro.`,
+
+            // Acessórios
+            "AirPods Pro (2ª geração)": `• Áudio: Cancelamento Ativo de Ruído e Áudio Adaptativo.
+• Chip: H2 da Apple, para qualidade sonora superior.
+• Resistência: A suor e água (IP54) para fones e estojo.
+• Bateria: Até 6 horas de áudio com apenas uma recarga.`,
+            "Apple Watch SE 2 40MM": `• Tela: Retina LTPO OLED, brilhante e nítida.
+• Recursos: Detecção de Acidente e SOS de Emergência.
+• Sensores: Monitoramento de batimentos cardíacos.
+• Resistência: À água (até 50 metros), ideal para natação.
+• Processador: S8 SiP para um desempenho rápido.`,
+             "Apple Watch Series 9": `• Tela: Retina Sempre Ativa para fácil visualização.
+• Recursos: Gesto de toque duplo, App Oxigênio no Sangue e ECG.
+• Sensores: Sensor de temperatura e Detecção de Acidente.
+• Resistência: À água (50m) e poeira (IP6X).
+• Processador: S9 SiP, o mais potente em um Apple Watch.`,
+            "Cabo de USB-C para Lightning": `• Função: Recarga rápida e sincronização de dados.
+• Conectores: USB-C em uma ponta e Lightning na outra.
+• Comprimento: 1 metro, ideal para uso diário.
+• Compatibilidade: Ampla com iPhones, iPads e iPods.`,
+            "Capa Anti Impactos Transparente": `• Material: Policarbonato rígido e materiais flexíveis.
+• Proteção: Bordas elevadas para proteger tela e câmeras.
+• Design: Transparente para manter a cor original do aparelho.
+• Durabilidade: Tratamento para evitar amarelamento.`,
+            "Capa Case Magnética Carregamento por Indução": `• Recurso: Anel magnético compatível com MagSafe.
+• Proteção: Contra quedas e arranhões.
+• Funcionalidade: Permite recarga sem fio e uso de acessórios MagSafe.
+• Design: Encaixe perfeito no iPhone.`,
+            "Capa de Silicone com MagSafe": `• Material: Exterior de silicone suave, interior de microfibra.
+• Recurso: Ímãs integrados para alinhamento com MagSafe.
+• Design: Toque agradável e disponível em várias cores.
+• Proteção: Eficaz contra arranhões e pequenas quedas.`,
+            "Carregador 20W USB-C": `• Potência: 20W para recarga rápida.
+• Porta: USB-C, padrão moderno e eficiente.
+• Compatibilidade: Ideal para iPhones (8 ou posterior) e iPads.
+• Design: Compacto, perfeito para levar a qualquer lugar.`,
+            "MagSafe Battery Pack": `• Função: Bateria externa magnética para recarga sem fio.
+• Design: Compacto, fixa-se magneticamente na traseira do iPhone.
+• Compatibilidade: iPhones 12 ou posteriores com MagSafe.
+• Praticidade: Recarga automática sem necessidade de botões.`,
+            "Película de Vidro Temperado": `• Material: Vidro temperado com dureza 9H.
+• Proteção: Máxima contra arranhões e impactos na tela.
+• Qualidade: Alta transparência, não afeta a sensibilidade ao toque.
+• Acabamento: Revestimento oleofóbico para reduzir marcas de dedos.`
+        };
+
+        async function generateDescription() {
+            const productName = document.getElementById('nomeProduto').value;
+            const descriptionArea = document.getElementById('productDescription');
+            const generateBtn = document.getElementById('generate-description-btn');
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('spinner');
+
+            if (!productName) {
+                descriptionArea.value = "Por favor, insira um nome para o produto primeiro.";
+                return;
+            }
+
+            // Check if the product has a predefined description
+            if (productDescriptions[productName]) {
+                descriptionArea.value = productDescriptions[productName];
+                return; // Stop the function here to avoid calling the API
+            }
+
+            // Show loading state for API call
+            generateBtn.disabled = true;
+            btnText.textContent = "Gerando...";
+            spinner.classList.remove('hidden');
+            descriptionArea.value = "";
+
+            const apiKey = ""; // API key is handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            const systemPrompt = "Você é um especialista em copywriting e marketing digital. Sua tarefa é criar descrições de produtos que sejam curtas, magnéticas e otimizadas para conversão em plataformas de e-commerce.";
+            const userQuery = `Crie uma descrição de venda persuasiva para o produto "${productName}", que será vendido por R$ ${suggestedPrice.toFixed(2).replace('.', ',')}. Destaque os principais benefícios, crie um senso de valor e urgência, e use uma chamada para ação clara. Mantenha o texto com no máximo 3 parágrafos.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    descriptionArea.value = candidate.content.parts[0].text;
+                } else {
+                    descriptionArea.value = "Não foi possível gerar uma descrição. A resposta da IA estava vazia. Tente novamente.";
+                    console.error('Unexpected API response structure:', result);
+                }
+
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                descriptionArea.value = "Ocorreu um erro ao gerar a descrição. Verifique o console para mais detalhes.";
+            } finally {
+                // Hide loading state
+                generateBtn.disabled = false;
+                btnText.textContent = "✨ Gerar Descrição do Produto";
+                spinner.classList.add('hidden');
+            }
+        }
+
+
+        // Add event listeners to all input fields to recalculate on any change
+        const inputs = ['custo', 'frete', 'outrosCustos', 'taxa', 'imposto', 'margem'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', calcular);
+        });
+        
+        // Also add an event listener for the new product name dropdown, although it doesn't affect the calculation
+        document.getElementById('nomeProduto').addEventListener('change', () => {
+             console.log('Product selected:', document.getElementById('nomeProduto').value);
+        });
+
+        // Event listener for the new Gemini feature button
+        document.getElementById('generate-description-btn').addEventListener('click', generateDescription);
+
+        // --- Menu Logic ---
+        const menuBtn = document.getElementById('menu-btn');
+        const menuDropdown = document.getElementById('menu-dropdown');
+        const smartphoneTab = document.getElementById('smartphone-tab');
+        const acessoriosTab = document.getElementById('acessorios-tab');
+        const nomeProdutoInput = document.getElementById('nomeProduto');
+        const productDescriptionArea = document.getElementById('productDescription');
+
+        function resetForm() {
+            // Reset input fields to their initial default values
+            document.getElementById('nomeProduto').value = '';
+            document.getElementById('custo').value = '50';
+            document.getElementById('frete').value = '2';
+            document.getElementById('outrosCustos').value = '0';
+            document.getElementById('taxa').value = '15';
+            document.getElementById('imposto').value = '6';
+            document.getElementById('margem').value = '30';
+            productDescriptionArea.value = '';
+            calcular(); // Recalculate to update the results to zero
+        }
+
+        smartphoneTab.addEventListener('click', (event) => {
+            event.preventDefault();
+            smartphoneTab.classList.add('bg-gray-100', 'font-semibold');
+            acessoriosTab.classList.remove('bg-ray-100', 'font-semibold');
+            
+            nomeProdutoInput.setAttribute('list', 'iphone-models');
+            nomeProdutoInput.placeholder = 'Digite ou selecione um modelo de iPhone';
+            
+            resetForm();
+            menuDropdown.classList.add('hidden');
+        });
+
+        acessoriosTab.addEventListener('click', (event) => {
+            event.preventDefault();
+            acessoriosTab.classList.add('bg-gray-100', 'font-semibold');
+            smartphoneTab.classList.remove('bg-gray-100', 'font-semibold');
+
+            nomeProdutoInput.setAttribute('list', 'acessorios-models');
+            nomeProdutoInput.placeholder = 'Digite ou selecione um acessório';
+
+            resetForm();
+            menuDropdown.classList.add('hidden');
+        });
+
+        menuBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            menuDropdown.classList.toggle('hidden');
+        });
+
+        window.addEventListener('click', () => {
+            if (!menuDropdown.classList.contains('hidden')) {
+                menuDropdown.classList.add('hidden');
+            }
+        });
+
+        // Run the calculation on initial page load
+        window.addEventListener('load', calcular);
+    </script>
+
+</body>
+</html>
